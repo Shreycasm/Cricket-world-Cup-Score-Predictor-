@@ -70,7 +70,7 @@ if button:
             'current_score': current_score,
             'run_rate': run_rate,
             'balls_left': balls_left,
-            'wickets_left': wickets,
+            'wickets_left': wickets_left,
             'runs_in_last_30_balls': last_30_balls,
             'rr_in_last_30_overs': rr_in_last_30_overs
         }
