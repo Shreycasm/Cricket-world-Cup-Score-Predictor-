@@ -66,6 +66,7 @@ else:
     col2.metric(label = "Total runs",value=0)
 total_50 = stats[(stats["batsmen_runs_x"] >= 50)  & (stats["batsmen_runs_x"] < 100)]
 total_100 = stats[(stats["batsmen_runs_x"] >= 100)]
+
 try:
     col3.metric(label="50s", value= total_50.shape[0])
 except:
@@ -112,8 +113,7 @@ except:
 
 
 
-st.divider()
-st.dataframe(stats.drop(["match_id"], axis=1), width=1500,hide_index=True)
+
 st.divider()
 
 

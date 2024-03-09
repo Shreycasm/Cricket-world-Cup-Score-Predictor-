@@ -2,9 +2,10 @@ import pandas as pd
 import numpy as np
 import pickle
 import gzip
+import xgboost
 
 
-balls = pd.read_csv("./artifacts/cwc2023_balls.csv")
+balls = pd.read_csv("./artifacts/cwc_2023_balls.csv")
 matches = pd.read_csv("./artifacts/cwc_2023_matches.csv")
 matches["Unnamed: 0"] = matches['date'] + " , " + matches["team_1"] + ' vs ' + matches["team_2"]
 
@@ -106,10 +107,15 @@ def team_boundaries(balls_df):
 def most_wins(matches_df):
     most_wins = matches_df["match_winner"].value_counts()
    
-   
+
+## TEAM WICKETS   
+def team_wickets(balls_df):
+    return (balls.groupby(["bowling_team"])[["is_wicket"]].sum().
+            reset_index().sort_values(by="is_wicket", ascending=False).
+            rename(columns ={'bowling_team':"Team", "is_wicket": "No. of Wickets"}))
+
 
 ##########################################################################################################################################################################
-
 
 
 # BATTING  STATS 
@@ -266,7 +272,114 @@ def most_100s(balls_df, selected_team="All"):
 
 ##########################################################################################################################################################################
 
+#BOWLING STATS
+def without_byes(balls_df):
+        
+    without_run_outs = balls_df[~balls_df['wicket_type'].isin(['run out'])]
+    without_byes = without_run_outs[~without_run_outs["extra_type"].isin(["legbyes", "byes"])]
 
+    return without_byes
+
+##BEST BOWLING FIGURE
+def best_figure(balls_df, selected_team="All"):
+    if selected_team == "All":   
+        balls_df["is_wicket"] = balls_df.apply(lambda x : 0 if x["wicket_type"] == "retired hurt" else x["is_wicket"], axis = 1)
+    else:
+        balls_df = balls_df[balls_df["bowling_team"] == selected_team]
+
+    without_byes_balls = without_byes(balls_df)
+
+    bowling_figure_each_match = without_byes_balls.groupby(["match_id", "bowler"]).agg({"total_runs":"sum","is_wicket":"sum"}).reset_index()
+    best_bowling_figure = bowling_figure_each_match.sort_values(by =[ "is_wicket","total_runs",] , ascending= [False, True])
+    best_bowling_figure["figure"] = best_bowling_figure["is_wicket"].astype("str") + "/" + best_bowling_figure["total_runs"].astype("str")
+
+    return best_bowling_figure
+
+##BEST BOWLING AVERAGE
+def bowling_avg(balls_df, selected_team="All"):
+    if selected_team == "All":   
+        balls_df["is_wicket"] = balls_df.apply(lambda x : 0 if x["wicket_type"] == "retired hurt" else x["is_wicket"], axis = 1)
+    else:
+        balls_df = balls_df[balls_df["bowling_team"] == selected_team]
+
+    without_byes_balls = without_byes(balls_df)
+    average_bowling = without_byes_balls.groupby("bowler").agg({"total_runs":"sum", "is_wicket":"sum"}).reset_index()
+    average_bowling["average"] = np.round(average_bowling["total_runs"]/ average_bowling["is_wicket"],2)
+    average_bowling = average_bowling.sort_values(by = "average")
+    average_bowling = average_bowling[average_bowling["average"] != np.inf]
+
+    return average_bowling
+
+##BEST BOWLING STRIKE RATE INNINGS
+def sr_bowling_inn(balls_df, selected_team="All"):
+    if selected_team == "All":   
+        balls_df["is_wicket"] = balls_df.apply(lambda x : 0 if x["wicket_type"] == "retired hurt" else x["is_wicket"], axis = 1)
+    else:
+        balls_df = balls_df[balls_df["bowling_team"] == selected_team]
+    
+    balls_df["is_wicket"] = balls_df.apply(lambda x: 0 if x["wicket_type"] == "retired hurt" else x["is_wicket"],axis=1)
+    without_run_outs = balls_df[~balls_df['wicket_type'].isin(['run out'])]
+    fair_deliveries = balls_df[balls_df['extra_type'].isin(["fair delivery", "byes", "legbyes", "penalty"])]
+    total_wickets = without_run_outs.groupby(["match_id", "bowler"])["is_wicket"].sum().reset_index()
+    strikerate_inn = fair_deliveries.groupby(["match_id", "bowler"]).agg({"balls":"count"}).reset_index()
+    strikerate_inn = strikerate_inn.merge(total_wickets,on=["match_id", "bowler"],how="left")
+    strikerate_inn["sr"] = strikerate_inn["balls"] / strikerate_inn["is_wicket"]
+    strikerate_inn = strikerate_inn[(~strikerate_inn['sr'].isin([np.inf])) & (strikerate_inn['is_wicket'] > 1)].sort_values(by='sr').\
+    sort_values(by =["sr", "is_wicket", "match_id"], ascending = [True, False, True])
+
+    return strikerate_inn
+
+##BEST STREIKEARATE TOURNAMENT
+def sr_bowling(balls_df, selected_team="All"):
+    if selected_team == "All":   
+        balls_df["is_wicket"] = balls_df.apply(lambda x : 0 if x["wicket_type"] == "retired hurt" else x["is_wicket"], axis = 1)
+    else:
+        balls_df = balls_df[balls_df["bowling_team"] == selected_team]
+    
+    balls_df["is_wicket"] = balls_df.apply(lambda x: 0 if x["wicket_type"] == "retired hurt" else x["is_wicket"],axis=1)
+    without_run_outs = balls_df[~balls_df['wicket_type'].isin(['run out'])]
+    total_wickets1 = without_run_outs.groupby(["bowler"])["is_wicket"].sum().reset_index()
+    fair_deliveries1 = balls_df[balls_df['extra_type'].isin(["fair delivery", "byes", "legbyes", "penalty"])]
+    strikerate_tourney = fair_deliveries1.groupby(["bowler"]).agg({"balls": "count"}).reset_index()
+    strikerate_tourney = strikerate_tourney.merge(total_wickets1, on=["bowler"], how="left")
+    strikerate_tourney["sr"] = strikerate_tourney["balls"] / strikerate_tourney["is_wicket"]
+    strikerate_tourney = strikerate_tourney[(~strikerate_tourney['sr'].isin([np.inf]))].sort_values(by='sr').sort_values(by =["sr", "is_wicket", ],
+                                                                                                                          ascending = [True, False, ]).head(15)
+
+    return strikerate_tourney
+
+##BEST ECONOMY INNINGS
+def economy_inng(balls_df, selected_team="All"):
+    if selected_team == "All":   
+        balls_df["is_wicket"] = balls_df.apply(lambda x : 0 if x["wicket_type"] == "retired hurt" else x["is_wicket"], axis = 1)
+    else:
+        balls_df = balls_df[balls_df["bowling_team"] == selected_team]
+    withput_byes = balls[(~balls["extra_type"].isin(["byes", "legbyes"]))]
+    total_runs_bowlers = withput_byes.groupby(["match_id", "bowler"])["total_runs"].sum().reset_index()
+    strikerate_inn = sr_bowling_inn(balls_df)
+    bowl_stats = strikerate_inn.merge(total_runs_bowlers,on=["match_id", "bowler"],)
+    bowl_stats["economy"] = bowl_stats["total_runs"] / (bowl_stats["balls"] / 6)
+    economy = bowl_stats[bowl_stats["is_wicket"] > 0]
+    economy = economy.sort_values(by="economy")
+
+    return economy
+
+def economy(balls_df , selected_team="All"):
+    if selected_team == "All":   
+        balls_df["is_wicket"] = balls_df.apply(lambda x : 0 if x["wicket_type"] == "retired hurt" else x["is_wicket"], axis = 1)
+    else:
+        balls_df = balls_df[balls_df["bowling_team"] == selected_team]
+    withput_byes = balls[(~balls["extra_type"].isin(["byes", "legbyes"]))]
+    total_runs_bowlers1 = withput_byes.groupby(["bowler"])["total_runs"].sum().reset_index()
+    strikerate_tourney = sr_bowling(balls_df)
+    bowl_stats1 = strikerate_tourney.merge(total_runs_bowlers1, on=["bowler"],)
+    bowl_stats1["economy"] = bowl_stats1["total_runs"] / (bowl_stats1["balls"] / 6)
+    economy1 = bowl_stats1[bowl_stats1["is_wicket"] > 0]
+    economy1 = economy1.sort_values(by="economy")
+
+    return economy1
+
+##########################################################################################################################################################################
 
 # PLAYER ANALYSIS
 ## ALL PLAYER NAMES

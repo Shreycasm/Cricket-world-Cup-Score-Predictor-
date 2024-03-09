@@ -29,26 +29,7 @@ st.markdown(
     unsafe_allow_html=True,
     )
 
-image_url = "https://www.aljazeera.com/wp-content/uploads/2023/11/2023-11-19T165916Z_681108936_UP1EJBJ1B6PVQ_RTRMADP_3_CRICKET-WORLDCUP-IND-AUS-1700413267.jpg?resize=1170%2C780&quality=80"
-image_width = 800
-image_height = 400
 
-
-border_color = "#16D9F9"
-border_width = 5
-
-st.markdown(
-    f"""
-        <div style="display: flex; justify-content: center; align-items: center; height: 50vh;">
-            <img src="{image_url}" style="width:{image_width}px; height: {image_height}px; border: {border_width}px solid {border_color};">
-        </div>
-        """,
-    unsafe_allow_html=True,
-)
-
-st.markdown(f'<h2 style="text-align: center;'
-            f'"> Congratulations Australia </h2>',unsafe_allow_html=True,)
-st.markdown(f'<h2 style="text-align: center;">ICC Mens World Cup 2023 Champions </h2>',unsafe_allow_html=True,)
 
 balls = utils.balls
 matches = utils.matches
@@ -134,9 +115,8 @@ with col1:
         ax.text(value + 0.1, i, str(value), va='center',color="w",fontdict = {"fontsize": "xx-large"})
 
     st.pyplot(fig)
-
 with col2:
-    st.dataframe(most_wins, hide_index= True, width =350)
+    st.dataframe(most_wins, hide_index= True, width =300)
 
 st.subheader("MOST TOSS WON")
 col1 , col2 = st.columns(2)
@@ -155,9 +135,8 @@ with col1:
         ax.text(value + 0.1, i, str(value), va='center',color="w",fontdict = {"fontsize": "xx-large"})
 
     st.pyplot(fig)
-
 with col2:
-    st.dataframe(most_wins, hide_index= True, width =350)
+    st.dataframe(most_wins, hide_index= True, width =300)
 
 col1,  col2 = st.columns(2) ## TOSS DECISION & MATCH RESULT AFTER WINNING TOSS
 with col1:
@@ -173,7 +152,6 @@ with col1:
     
 
     st.pyplot(fig)
-
 with col2:
     st.subheader("WIN % AFTER WINNING TOSS")
     fig , ax = plt.subplots()
@@ -220,9 +198,8 @@ with col1:
     for i, value in enumerate(df['Field'].astype("int")):
         ax.text(-value - 0.1, i, str(value), va='center', ha='right', color="w",fontdict = {"fontsize": "xx-large"})
     st.pyplot(fig)
-
 with col2:
-    st.dataframe(df, width=350, hide_index=True)
+    st.dataframe(df, width=300, hide_index=True)
 
 
 st.subheader("AVERAGE 1ST INNINGS SCORE AT DIFFERENT VENUE")
@@ -243,7 +220,7 @@ with col1:
 
     st.pyplot(fig)
 with col2:
-    st.dataframe(df, hide_index=True, width =350)
+    st.dataframe(df, hide_index=True, width =300)
 
 st.subheader("MOST 50+ INDIVIDUAL SCORES")
 col1, col2 =st.columns(2)
@@ -276,10 +253,9 @@ with col1:
     for i, value in enumerate(most_100_team['100s']):
         ax.text(-value - 0.1, i, str(value), va='center', ha='right', color="w",fontdict = {"fontsize": "xx-large"})
     st.pyplot(fig)
-
 with col2:
     df = most_100_team.merge(most_50_team, on ="Team",)
-    st.dataframe(df ,width=350,hide_index=True)
+    st.dataframe(df ,width=300,hide_index=True)
 
 
 st.subheader("MOST BOUNDARIES")
@@ -313,12 +289,30 @@ with col1:
     for i, value in enumerate(most_boundaries['4s']):
         ax.text(-value - 0.2, i, str(value), va='center', ha='right', color="w",fontdict = {"fontsize": "xx-large"})
     st.pyplot(fig)
-
 with col2:
     df = most_100_team.merge(most_boundaries, on ="Team",)
-    st.dataframe(df[["Team","4s","6s"]] ,width=350,hide_index=True)
+    st.dataframe(df[["Team","4s","6s"]] ,width=300,hide_index=True)
 
 
+st.subheader("TEAM WITH MOST WICKETS")
+col1, col2 = st.columns(2)
+with col1:
+    df = utils.team_wickets(balls)
+    fig, ax = plt.subplots()
+    fig, ax = utils.plot_look(fig, ax)
+
+    plt.bar(df["Team"], df["No. of Wickets"], color =utils.color_scheme(df["No. of Wickets"]), edgecolor="gold")
+
+    ax.set_xticklabels(df.Team, color="w",fontdict = {"fontsize": "xx-large"},rotation =25)
+    ax.set_yticklabels(ax.get_xticks(), color="#320073", )
+
+    for i, value in enumerate(df["No. of Wickets"]):
+            ax.text(i, int(value)+ 0.2, str(int(value)),
+                    ha='center', va='bottom', color="white",fontdict = {"fontsize": "x-large"})
+
+    st.pyplot(fig)
+with col2:
+    st.dataframe(df, hide_index=True, width =300)
 
 
 

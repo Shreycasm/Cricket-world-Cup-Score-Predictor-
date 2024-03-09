@@ -45,8 +45,8 @@ def color_scheme(value_counts):
     return colors
 
 
-teams = li = ["All"]
-li.extend(sorted(balls.batting_team.unique()))
+teams = ["All"]
+teams.extend(sorted(balls.batting_team.unique()))
 selected_team = st.sidebar.selectbox("Select Team",teams)
 
 st.header(f"Batting Stats - {selected_team}", divider="grey")
@@ -83,7 +83,7 @@ with (col1):
     st.pyplot(fig)
 with col2:
     st.dataframe(highest_score_df[["batsmen", "batsmen_runs"]]. \
-                 rename(columns={"batsmen_runs": 'Runs', "batsmen": "Batsmen"}).set_index("Batsmen"), width=350)
+                 rename(columns={"batsmen_runs": 'Runs', "batsmen": "Batsmen"}).set_index("Batsmen"), width=300)
 
 
 st.subheader("Most Runs")
@@ -116,7 +116,7 @@ with col1:
     st.pyplot(fig)
 with col2:
     st.dataframe(most_runs[["batsmen", "batsmen_runs"]]. \
-                 rename(columns={"batsmen_runs": 'Runs', "batsmen": "Batsmen"}).set_index("Batsmen"), width=350)
+                 rename(columns={"batsmen_runs": 'Runs', "batsmen": "Batsmen"}).set_index("Batsmen"), width=300)
 
 
 st.subheader("Most 4s")
@@ -147,7 +147,7 @@ with col1:
     st.pyplot(fig)
 with col2:
     st.dataframe(most_4s[["batsmen", "batsmen_runs"]]. \
-                 rename(columns={"batsmen_runs": '4S', "batsmen": "Batsmen"}).set_index("Batsmen"), width=350)
+                 rename(columns={"batsmen_runs": '4S', "batsmen": "Batsmen"}).set_index("Batsmen"), width=300)
 
 
 st.subheader("Most 6s")
@@ -179,7 +179,7 @@ with col1:
     st.pyplot(fig)
 with col2:
     st.dataframe(most_6s[["batsmen", "batsmen_runs"]]. \
-                 rename(columns={"batsmen_runs": '6S', "batsmen": "Batsmen"}).set_index("Batsmen"), width=350)
+                 rename(columns={"batsmen_runs": '6S', "batsmen": "Batsmen"}).set_index("Batsmen"), width=300)
 
 
 st.subheader("Best Strike Rate In Tournament")
@@ -211,7 +211,7 @@ with col1:
     st.pyplot(fig)
 with col2:
     st.dataframe(sr[["batsmen", "strike_rate"]]. \
-                 rename(columns={"strike_rate": 'Strike Rate', "batsmen": "Batsmen"}).set_index("Batsmen"), width=350)
+                 rename(columns={"strike_rate": 'Strike Rate', "batsmen": "Batsmen"}).set_index("Batsmen"), width=300)
 
 
 st.subheader("Best Strike Rate Innings")
@@ -242,7 +242,7 @@ with col1:
     st.pyplot(fig)
 with col2:
     st.dataframe(sr_inng[["batsmen", "strike_rate"]]. \
-                 rename(columns={"strike_rate": 'Strike Rate', "batsmen": "Batsmen"}).set_index("Batsmen"), width=350)
+                 rename(columns={"strike_rate": 'Strike Rate', "batsmen": "Batsmen"}).set_index("Batsmen"), width=300)
 
 
 st.subheader("Best Batting Average")
@@ -273,7 +273,7 @@ with col1:
 
     st.pyplot(fig)
 with col2:
-    st.dataframe(average[["batsmen", "avg"]], width=350, hide_index =True)
+    st.dataframe(average[["batsmen", "avg"]], width=300, hide_index =True)
 
 
 st.subheader("Most 50s")
@@ -304,7 +304,7 @@ with col1:
     st.pyplot(fig)
 with col2:
     st.dataframe(most_50s[["batsmen", "batsmen_runs"]]. \
-                 rename(columns={"batsmen_runs": 'No. of 50s', "batsmen": "Batsmen"}).set_index("Batsmen"), width=350)
+                 rename(columns={"batsmen_runs": 'No. of 50s', "batsmen": "Batsmen"}).set_index("Batsmen"), width=300)
 
 
 st.subheader("Most 100s")
@@ -339,7 +339,7 @@ with col2:
     try:
         st.dataframe(most_100s[["batsmen", "batsmen_runs"]]. \
                      rename(columns={"batsmen_runs": 'No. of 100s', "batsmen": "Batsmen"}).set_index("Batsmen"),
-                     width=350)
+                     width=300)
     except:
 
         st.write(f"{selected_team} has no individual century")
