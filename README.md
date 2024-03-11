@@ -6,4 +6,4 @@ It also predicts the Score of 1st Innings for this worldcup
 
 
 Note:- 
-Due to streamlits resource constraints it toakes long to load the app which ruins the experience so limited ststistics and visuals wwere showcased.
+Due to streamlits resource constraints it takes longer to load the app which ruins the experience so limited statistics and visuals were showcased.
